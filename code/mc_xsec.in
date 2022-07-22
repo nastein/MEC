@@ -1,0 +1,16 @@
+30000            # number of events
+1500.0    30.0   # enu, thetalept
+1200.0  40        # wmax,nw
+225.0             # xpf
+12                # xA
+0                 # i_fg : Fermi gas if eq to 1
+'../pke/pke12_tot.data' # file or normalized n(k)
+40   80              # np ne
+0                 # i_fsi
+.false.            # pwia
+
+# 200 201 'pke_o16_scgf.dat'
+# 16 24  'pke12_MF_resc.out'
+# 200 301 'pke_c12_scgf.dat'
+# 40 80  'pke12_tot.data'
+# 200   150 'pke16.data'
