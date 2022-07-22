@@ -12,6 +12,7 @@ module dirac_matrices
     complex*16, private, save :: sig(3,2,2),id(2,2),id4(4,4),up(2),down(2)
     complex*16, private, save :: up1(2,4),up2(2,4),upp1(2,4),upp2(2,4), &
             &   ubarp1(2,4),ubarp2(2,4),ubarpp1(2,4),ubarpp2(2,4)
+    real*8, private, save :: ti1,ti2
     complex*16, private, save :: isop1(2,2), isop2(2,2), isopp1(2,2), isopp2(2,2)
     complex*16, private, save :: gamma_mu(4,4,5),g_munu(4,4)
     complex*16, private, save :: p1_sl(4,4),p2_sl(4,4),pp1_sl(4,4),pp2_sl(4,4), &
@@ -144,10 +145,10 @@ subroutine define_spinors()
     return
 end subroutine
 
-subroutine current_init(p1_in,p2_in,pp1_in,pp2_in,q_in,k1_in,k2_in,i_fl_in)
+subroutine current_init(p1_in,p2_in,pp1_in,pp2_in,q_in,k1_in,k2_in,i_fl_in,t1,t2)
     implicit none
     integer*4 :: i,i_fl_in
-    real*8 ::  p1_in(4),p2_in(4),pp1_in(4),pp2_in(4),q_in(4),k1_in(4),k2_in(4)
+    real*8 ::  p1_in(4),p2_in(4),pp1_in(4),pp2_in(4),q_in(4),k1_in(4),k2_in(4),t1,t2
     i_fl=i_fl_in
     p1=p1_in
     p2=p2_in
@@ -156,6 +157,8 @@ subroutine current_init(p1_in,p2_in,pp1_in,pp2_in,q_in,k1_in,k2_in,i_fl_in)
     k1=k1_in
     k2=k2_in
     q=q_in
+    ti1=t1
+    ti2=t2
 !
     p1_sl=czero
     p2_sl=czero
@@ -355,8 +358,6 @@ subroutine det_JaJc_dir(r_cc,r_cl,r_ll,r_t,r_tp)
    complex*16 :: jaja(4,4),jbjb(4,4),jajb(4,4)
    complex*16 :: jajc(4,4),jajd(4,4),jbjc(4,4),jbjd(4,4),r_av(4,4)
    real*8 :: r_cc,r_cl,r_ll,r_t,r_tp
-   
-
 
    J_12a=czero
    J_12b=czero
@@ -417,24 +418,46 @@ subroutine det_JaJc_dir(r_cc,r_cl,r_ll,r_t,r_tp)
       enddo  
    enddo     
 
-   !Factor of two difference is due to not looking at jcjc jdjd etc.
-   jaja(:,:)=tr_jaja(:,:)*tr_2*16.0d0/3.0d0
-   jbjb(:,:)=tr_jbjb(:,:)*tr_2*16.0d0/3.0d0
-   jajb(:,:)=tr_jajb(:,:)*tr_2*(16.0d0/9.0d0)
-   do i=1,4
-      do j=1,4
-      jajc(i,j)=tr_ja(i)*tr_jc(j)*(-16.0d0/9.0d0)
-      jajd(i,j)=tr_ja(i)*tr_jd(j)*(16.0d0/9.0d0)
-      jbjc(i,j)=tr_jb(i)*tr_jc(j)*(16.0d0/9.0d0)
-      jbjd(i,j)=tr_jb(i)*tr_jd(j)*(-16.0d0/9.0d0)
-      enddo
-   enddo  
-   r_av=jaja+jbjb+jajb+jajc+jajd+jbjc+jbjd
-   r_cc=r_av(1,1)
-   r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
-   r_ll=r_av(4,4)
-   r_t=r_av(2,2)+r_av(3,3)
-   r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+   !Covers pp and nn case for initial states
+   !multplied by two fr not looking into jcjc,jdjd,jcjd,etc.
+   if(ti1.eq.0.5.and.ti2.eq.0.5) then
+       jaja(:,:)=tr_jaja(:,:)*tr_2*(4.0d0/9.0d0)*2.0d0
+       jbjb(:,:)=tr_jbjb(:,:)*tr_2*(4.0d0/9.0d0)*2.0d0
+       jajb(:,:)=tr_jajb(:,:)*tr_2*(4.0d0/9.0d0)*2.0d0
+       do i=1,4
+          do j=1,4
+              jajc(i,j)=tr_ja(i)*tr_jc(j)*(4.0d0/9.0d0)*2.0d0
+              jajd(i,j)=tr_ja(i)*tr_jd(j)*(4.0d0/9.0d0)*2.0d0
+              jbjc(i,j)=tr_jb(i)*tr_jc(j)*(4.0d0/9.0d0)*2.0d0
+              jbjd(i,j)=tr_jb(i)*tr_jd(j)*(4.0d0/9.0d0)*2.0d0
+          enddo
+       enddo  
+       r_av=jaja+jbjb+jajb+jajc+jajd+jbjc+jbjd
+       r_cc=r_av(1,1)
+       r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
+       r_ll=r_av(4,4)
+       r_t=r_av(2,2)+r_av(3,3)
+       r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+   
+   elseif(ti1.eq.0.5.and.ti2.eq.-0.5) then
+       jaja(:,:)=tr_jaja(:,:)*tr_2*(8.0d0/9.0d0)*2.0d0
+       jbjb(:,:)=tr_jbjb(:,:)*tr_2*(8.0d0/9.0d0)*2.0d0
+       jajb(:,:)=tr_jajb(:,:)*tr_2*0.0
+       do i=1,4
+          do j=1,4
+              jajc(i,j)=tr_ja(i)*tr_jc(j)*(-8.0d0/9.0d0)*2.0d0
+              jajd(i,j)=tr_ja(i)*tr_jd(j)*0.0
+              jbjc(i,j)=tr_jb(i)*tr_jc(j)*0.0
+              jbjd(i,j)=tr_jb(i)*tr_jd(j)*(-8.0d0/9.0d0)*2.0d0
+          enddo
+       enddo  
+       r_av=jaja+jbjb+jajb+jajc+jajd+jbjc+jbjd
+       r_cc=r_av(1,1)
+       r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
+       r_ll=r_av(4,4)
+       r_t=r_av(2,2)+r_av(3,3)
+       r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+   endif
  
   return
 end subroutine det_JaJc_dir
@@ -523,21 +546,39 @@ subroutine det_JaJc_exc(r_cc,r_cl,r_ll,r_t,r_tp)
       enddo
    enddo
    
-   
-   jaja(:,:)=tr_jaja(:,:)*16.0d0/3.0d0
-   jbjb(:,:)=tr_jbjb(:,:)*(-16.0d0/9.0d0)
-   jajb(:,:)=2.0d0*tr_jajb(:,:)*(16.0d0/9.0d0)
-   jajc(:,:)=tr_jajc(:,:)*(-16.0d0/9.0d0)
-   jajd(:,:)=tr_jajd(:,:)*(16.0d0/9.0d0)
-   jbjc(:,:)=tr_jbjc(:,:)*(16.0d0/9.0d0)
-   jbjd(:,:)=tr_jbjd(:,:)*(16.0d0/3.0d0)
+   if(ti1.eq.0.5.and.ti2.eq.0.5) then
+       jaja(:,:)=tr_jaja(:,:)*(4.0d0/9.0d0)*2.0d0
+       jbjb(:,:)=tr_jbjb(:,:)*(4.0d0/9.0d0)*2.0d0
+       jajb(:,:)=2.0d0*tr_jajb(:,:)*(4.0d0/9.0d0)*2.0d0
+       jajc(:,:)=tr_jajc(:,:)*(4.0d0/9.0d0)*2.0d0
+       jajd(:,:)=tr_jajd(:,:)*(4.0d0/9.0d0)*2.0d0
+       jbjc(:,:)=tr_jbjc(:,:)*(4.0d0/9.0d0)*2.0d0
+       jbjd(:,:)=tr_jbjd(:,:)*(4.0d0/9.0d0)*2.0d0
 
-   r_exc=jaja+jbjb+jajb+jajc+jajd+jbjc+jbjd
-   r_cc=r_exc(1,1)
-   r_cl=-0.5d0*(r_exc(1,4)+r_exc(4,1))
-   r_ll=r_exc(4,4)
-   r_t=r_exc(2,2)+r_exc(3,3)
-   r_tp=-0.5d0*ci*(r_exc(2,3)-r_exc(3,2)) 
+       r_exc=jaja+jbjb+jajb+jajc+jajd+jbjc+jbjd
+       r_cc=r_exc(1,1)
+       r_cl=-0.5d0*(r_exc(1,4)+r_exc(4,1))
+       r_ll=r_exc(4,4)
+       r_t=r_exc(2,2)+r_exc(3,3)
+       r_tp=-0.5d0*ci*(r_exc(2,3)-r_exc(3,2))   
+   
+   elseif(ti1.eq.0.5.and.ti2.eq.-0.5) then
+       jaja(:,:)=tr_jaja(:,:)*(8.0d0/9.0d0)*2.0d0
+       jbjb(:,:)=tr_jbjb(:,:)*(-8.0d0/9.0d0)*2.0d0
+       jajb(:,:)=2.0d0*tr_jajb(:,:)*0.0
+       jajc(:,:)=tr_jajc(:,:)*(-8.0d0/9.0d0)*2.0d0
+       jajd(:,:)=tr_jajd(:,:)*0.0
+       jbjc(:,:)=tr_jbjc(:,:)*0.0
+       jbjd(:,:)=tr_jbjd(:,:)*(8.0d0/9.0d0)*2.0d0
+
+       r_exc=jaja+jbjb+jajb+jajc+jajd+jbjc+jbjd
+       r_cc=r_exc(1,1)
+       r_cl=-0.5d0*(r_exc(1,4)+r_exc(4,1))
+       r_ll=r_exc(4,4)
+       r_t=r_exc(2,2)+r_exc(3,3)
+       r_tp=-0.5d0*ci*(r_exc(2,3)-r_exc(3,2)) 
+       
+   endif
   
   return
 end subroutine det_JaJc_exc
@@ -610,22 +651,43 @@ end subroutine det_JaJc_exc
          enddo
       enddo
    enddo
-   
-   !First factor of 2 is from not including jc/jd, second is for complex conjugate
-   !Minus sign comes from change of convention in (Iv)
-   jfja=jfja*16.0d0/3.0d0*2.0d0
-   jfjb=jfjb*(-16.0d0/3.0d0)*2.0d0
-   jsja=jsja*16.0d0/3.0d0*2.0d0
-   jsjb=jsjb*(-16.0d0/3.0d0)*2.0d0
-   jpja=jpja*16.0d0/3.0d0*2.0d0
-   jpjb=jpjb*(-16.0d0/3.0d0)*2.0d0
 
-   r_av=jfja+jfjb+jsja+jsjb+jpja+jpjb
-   r_cc=r_av(1,1)
-   r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
-   r_ll=r_av(4,4)
-   r_t=r_av(2,2)+r_av(3,3)
-   r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+
+   if(ti1.eq.0.5.and.ti2.eq.0.5) then
+      !First factor of 2 is from not including jc/jd, second is for complex conjugate
+      !Minus sign comes from change of convention in (Iv)
+      jfja=jfja*0.0
+      jfjb=jfjb*0.0
+      jsja=jsja*0.0
+      jsjb=jsjb*0.0
+      jpja=jpja*0.0
+      jpjb=jpjb*0.0
+
+      r_av=jfja+jfjb+jsja+jsjb+jpja+jpjb
+      r_cc=r_av(1,1)
+      r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
+      r_ll=r_av(4,4)
+      r_t=r_av(2,2)+r_av(3,3)
+      r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+
+   elseif(ti1.eq.0.5.and.ti2.eq.-0.5) then
+      !First factor of 2 is from not including jc/jd, second is for complex conjugate
+      !Minus sign comes from change of convention in (Iv)
+      jfja=jfja*(4.0d0/3.0d0)*2.0d0*2.0d0
+      jfjb=jfjb*(-4.0d0/3.0d0)*2.0d0*2.0d0
+      jsja=jsja*(4.0d0/3.0d0)*2.0d0*2.0d0
+      jsjb=jsjb*(-4.0d0/3.0d0)*2.0d0*2.0d0
+      jpja=jpja*(4.0d0/3.0d0)*2.0d0*2.0d0
+      jpjb=jpjb*(-4.0d0/3.0d0)*2.0d0*2.0d0
+
+      r_av=jfja+jfjb+jsja+jsjb+jpja+jpjb
+      r_cc=r_av(1,1)
+      r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
+      r_ll=r_av(4,4)
+      r_t=r_av(2,2)+r_av(3,3)
+      r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+
+   endif
 
    return
  end subroutine det_JpiJaJb
@@ -701,19 +763,42 @@ end subroutine det_JaJc_exc
          enddo
       enddo
    enddo
-   jfja(:,:)=jfja(:,:)*16.0d0/3.0d0*2.0d0
-   jfjb(:,:)=jfjb(:,:)*16.0d0/3.0d0*2.0d0
-   jsja(:,:)=jsja(:,:)*16.0d0/3.0d0*2.0d0
-   jsjb(:,:)=jsjb(:,:)*16.0d0/3.0d0*2.0d0
-   jpja(:,:)=jpja(:,:)*16.0d0/3.0d0*2.0d0
-   jpjb(:,:)=jpjb(:,:)*16.0d0/3.0d0*2.0d0
+
+   if(ti1.eq.0.5.and.ti2.eq.0.5) then
+      !First factor of 2 is from not including jc/jd, second is for complex conjugate
+      !Minus sign comes from change of convention in (Iv)
+       jfja(:,:)=jfja(:,:)*0.0
+       jfjb(:,:)=jfjb(:,:)*0.0
+       jsja(:,:)=jsja(:,:)*0.0
+       jsjb(:,:)=jsjb(:,:)*0.0
+       jpja(:,:)=jpja(:,:)*0.0
+       jpjb(:,:)=jpjb(:,:)*0.0
    
-   r_av=jfja+jfjb+jsja+jsjb+jpja+jpjb
-   r_cc=r_av(1,1)
-   r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
-   r_ll=r_av(4,4)
-   r_t=r_av(2,2)+r_av(3,3)
-   r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+       r_av=jfja+jfjb+jsja+jsjb+jpja+jpjb
+       r_cc=r_av(1,1)
+       r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
+       r_ll=r_av(4,4)
+       r_t=r_av(2,2)+r_av(3,3)
+       r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2))
+
+   elseif(ti1.eq.0.5.and.ti2.eq.-0.5) then
+      !First factor of 2 is from not including jc/jd, second is for complex conjugate
+      !Minus sign comes from change of convention in (Iv)
+       jfja(:,:)=jfja(:,:)*(4.0d0/3.0d0)*2.0d0*2.0d0
+       jfjb(:,:)=jfjb(:,:)*(4.0d0/3.0d0)*2.0d0*2.0d0
+       jsja(:,:)=jsja(:,:)*(4.0d0/3.0d0)*2.0d0*2.0d0
+       jsjb(:,:)=jsjb(:,:)*(4.0d0/3.0d0)*2.0d0*2.0d0
+       jpja(:,:)=jpja(:,:)*(4.0d0/3.0d0)*2.0d0*2.0d0
+       jpjb(:,:)=jpjb(:,:)*(4.0d0/3.0d0)*2.0d0*2.0d0
+   
+       r_av=jfja+jfjb+jsja+jsjb+jpja+jpjb
+       r_cc=r_av(1,1)
+       r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
+       r_ll=r_av(4,4)
+       r_t=r_av(2,2)+r_av(3,3)
+       r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2))
+
+   endif
 
    return
  end subroutine det_JpiJaJb_exc
@@ -832,26 +917,53 @@ subroutine det_JpiJpi(r_cc,r_cl,r_ll,r_t,r_tp)
       enddo
    enddo
 
-   jfjf(:,:)=16.0d0*tr_ff(:,:)*tr_2
-   do mu=1,4
-      do nu=1,4
-      jsjs(mu,nu)=2.0d0*tr_ss12(mu)*tr_ss21(nu)
-      jpjp(mu,nu)=2.0d0*tr_pp12(mu)*tr_pp21(nu)
-      jpjs(mu,nu)=2.0d0*tr_ps12(mu)*tr_ps21(nu)
-      enddo
-   enddo 
-   jsjs(:,:)=16.0d0*(jsjs(:,:)+tr_ss11(:,:)*tr_2+tr_ss22(:,:)*tr_1)
-   jpjp(:,:)=16.0d0*(jpjp(:,:)+tr_pp11(:,:)*tr_2+tr_pp22(:,:)*tr_1)
-   jpjs(:,:)=16.0d0*(jpjs(:,:)+tr_ps11(:,:)*tr_2+tr_ps22(:,:)*tr_1)
-   jfjs(:,:)=16.0d0*(tr_fs1(:,:)*tr_2*2.0d0)
-   jfjp(:,:)=16.0d0*(tr_fp1(:,:)*tr_2*2.0d0)
-   r_av=jfjf+jsjs+2.0d0*jfjs+jpjp+2.0d0*jfjp+2.0d0*jpjs
+   if(ti1.eq.0.5.and.ti2.eq.0.5) then
+       jfjf(:,:)=0.0*tr_ff(:,:)*tr_2
+       do mu=1,4
+          do nu=1,4
+          jsjs(mu,nu)=2.0d0*tr_ss12(mu)*tr_ss21(nu)
+          jpjp(mu,nu)=2.0d0*tr_pp12(mu)*tr_pp21(nu)
+          jpjs(mu,nu)=2.0d0*tr_ps12(mu)*tr_ps21(nu)
+          enddo
+       enddo 
+       jsjs(:,:)=0.0*(jsjs(:,:)+tr_ss11(:,:)*tr_2+tr_ss22(:,:)*tr_1)
+       jpjp(:,:)=0.0*(jpjp(:,:)+tr_pp11(:,:)*tr_2+tr_pp22(:,:)*tr_1)
+       jpjs(:,:)=0.0*(jpjs(:,:)+tr_ps11(:,:)*tr_2+tr_ps22(:,:)*tr_1)
+       jfjs(:,:)=0.0*(tr_fs1(:,:)*tr_2*2.0d0)
+       jfjp(:,:)=0.0*(tr_fp1(:,:)*tr_2*2.0d0)
+       r_av=jfjf+jsjs+2.0d0*jfjs+jpjp+2.0d0*jfjp+2.0d0*jpjs
    
-   r_cc=r_av(1,1)
-   r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
-   r_ll=r_av(4,4)
-   r_t=r_av(2,2)+r_av(3,3)
-   r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+       r_cc=r_av(1,1)
+       r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
+       r_ll=r_av(4,4)
+       r_t=r_av(2,2)+r_av(3,3)
+       r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+
+   elseif(ti1.eq.0.5.and.ti2.eq.-0.5) then
+       jfjf(:,:)=tr_ff(:,:)*tr_2*(4.0d0)*2.0d0
+       do mu=1,4
+          do nu=1,4
+          jsjs(mu,nu)=2.0d0*tr_ss12(mu)*tr_ss21(nu)
+          jpjp(mu,nu)=2.0d0*tr_pp12(mu)*tr_pp21(nu)
+          jpjs(mu,nu)=2.0d0*tr_ps12(mu)*tr_ps21(nu)
+          enddo
+       enddo 
+       jsjs(:,:)=(jsjs(:,:)+tr_ss11(:,:)*tr_2+tr_ss22(:,:)*tr_1)*(4.0d0)*2.0d0
+       jpjp(:,:)=(jpjp(:,:)+tr_pp11(:,:)*tr_2+tr_pp22(:,:)*tr_1)*(4.0d0)*2.0d0
+       jpjs(:,:)=(jpjs(:,:)+tr_ps11(:,:)*tr_2+tr_ps22(:,:)*tr_1)*(4.0d0)*2.0d0
+       jfjs(:,:)=(tr_fs1(:,:)*tr_2*2.0d0)*(4.0d0)*2.0d0
+       jfjp(:,:)=(tr_fp1(:,:)*tr_2*2.0d0)*(4.0d0)*2.0d0
+       r_av=jfjf+jsjs+2.0d0*jfjs+jpjp+2.0d0*jfjp+2.0d0*jpjs
+   
+       r_cc=r_av(1,1)
+       r_cl=-0.5d0*(r_av(1,4)+r_av(4,1))
+       r_ll=r_av(4,4)
+       r_t=r_av(2,2)+r_av(3,3)
+       r_tp=-0.5d0*ci*(r_av(2,3)-r_av(3,2)) 
+
+   endif
+
+   
 
    return
 end subroutine   
@@ -887,6 +999,7 @@ end subroutine
 subroutine iso_ME(t1,t2,tp1,tp2)
     implicit none
     real*8 :: t1,t2,tp1,tp2
+end subroutine
 
 
 end module

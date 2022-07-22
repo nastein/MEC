@@ -8,8 +8,17 @@ module mc_module
    real*8, private,parameter :: alpha=1.0d0/137.0d0
    real*8, private, allocatable :: pv(:),dp(:),ep(:),Pke(:,:)
    real*8, private, allocatable :: kin(:),pot(:),pdel(:),pot_del(:)
+   real*8, private, save :: ti1, ti2
    integer*8, private, allocatable, save :: irn(:)
 contains
+
+subroutine set_isospins(t1,t2)
+   implicit none
+   real*8 :: t1,t2
+
+   ti1=t1 
+   ti2=t2
+end subroutine 
 
 subroutine mc_init(i_fg_in,pwia,i_fsi_in,irn_in,nev_in,nwlk_in,xpf_in,thetalept_in,xmpi_in,xmd_in,xmn_in,xA_in, &
      &  np_in,ne_in,nk_fname_in)
@@ -20,6 +29,7 @@ subroutine mc_init(i_fg_in,pwia,i_fsi_in,irn_in,nev_in,nwlk_in,xpf_in,thetalept_
    integer*4 :: ipot,i_fsi_in
    real*8 :: xpf_in,xmpi_in,xmd_in,xmn_in,mlept_in,hp,he,thetalept_in
    real*8, allocatable :: pv0(:),dp0(:,:),ep0(:)
+   real*8 :: t1, t2
    character*40 :: nk_fname_in
    logical :: pwia
    
@@ -340,7 +350,7 @@ subroutine int_eval(ctpp1,p2,ctp2,phip2,p1,ctp1,phip1,ip1,ip2,ie1,ie2,w,qval,r_n
    k2e_4(:)=q_4(:)-k1e_4(:)
 
 !.......currents
-   call current_init(p1_4,p2_4,pp1_4,pp2_4,q_4,k1_4,k2_4,1)      
+   call current_init(p1_4,p2_4,pp1_4,pp2_4,q_4,k1_4,k2_4,1,ti1,ti2)      
    call define_spinors()
    call det_Jpi(gep)
    call det_JpiJpi(r_cc_pi,r_cl_pi,r_ll_pi,r_t_pi,r_tp_pi)
@@ -354,7 +364,7 @@ subroutine int_eval(ctpp1,p2,ctp2,phip2,p1,ctp1,phip1,ip1,ip2,ie1,ie2,w,qval,r_n
    dir(4)=r_t_pi+2.0d0*(r_t_del+r_t_int)
    dir(5)=r_tp_pi+2.0d0*(r_tp_del+r_tp_int)
    
-   call current_init(p1_4,p2_4,pp2_4,pp1_4,q_4,k1e_4,k2e_4,2)
+   call current_init(p1_4,p2_4,pp2_4,pp1_4,q_4,k1e_4,k2e_4,2,ti1,ti2)
    call det_JaJb_JcJd(cv3,ca5,np_del,pdel,pot_del)
    call det_JaJc_exc(r_cc_del,r_cl_del,r_ll_del,r_t_del,r_tp_del)
    call det_JpiJaJb_exc(r_cc_int,r_cl_int,r_ll_int,r_t_int,r_tp_int)
