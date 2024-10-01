@@ -21,8 +21,8 @@ program em_2body
    call init0()
 
 ! read input
-    !open(unit=7, file='C12_1500_37p5_2b_isospintot.out')
-    open(unit=7, file='test4_an2_cm_free_low_nev.out')
+    open(unit=7, file='C12_730_37p0_2b_np.out')
+    !open(unit=7, file='test4_an2_cm_free_low_nev.out')
 
    if (myrank().eq.0) then
       read(5,*) nev
@@ -77,10 +77,10 @@ program em_2body
 
 
 !...this is for the total xsec
-   hw=(wmax-200.0d0)/dble(nw)
+   hw=(wmax)/dble(nw)
    
    do i=1,nw
-      w=+dble(i-0.5d0)*hw + 200.0d0
+      w=+dble(i-0.5d0)*hw
       ef=ee-w
       call mc_eval(ee,w,sig,sig_err)
 

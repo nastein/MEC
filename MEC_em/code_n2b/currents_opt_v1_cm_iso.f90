@@ -426,25 +426,29 @@ subroutine det_JaJc_dir(r_cc,r_cl,r_ll,r_t,r_tp)
       enddo  
    enddo     
 
-   if(pair_isospin.ne.1 .and. pair_isospin.ne.0) then
-        ciso1 = IDeltaADag_EM(t1p,t2p,t1,t2)*IDeltaA_EM(t1,t2,t2p,t1p)
-        ciso2 = IDeltaBDag_EM(t1p,t2p,t1,t2)*IDeltaB_EM(t1,t2,t2p,t1p)
-        ciso3 = IDeltaADag_EM(t1p,t2p,t1,t2)*IDeltaB_EM(t1,t2,t2p,t1p)
+   if(pair_isospin.eq.1) then
+        ciso1 = (4.0d0/9.0d0)
+        ciso2 = (4.0d0/9.0d0)
+        ciso3 = (4.0d0/9.0d0)
+   else if(pair_isospin.eq.0) then
+        ciso1 = (8.0d0/9.0d0)
+        ciso2 = (-8.0d0/9.0d0)
+        ciso3 = 0
    else
-        ciso1 = 16.0d0/3.0d0
-        ciso2 = -16.0d0/9.0d0
-        ciso3 = 16.0d0/9.0d0
+        ciso1 = 4.0d0/3.0d0
+        ciso2 = -4.0d0/9.0d0
+        ciso3 = 4.0d0/9.0d0
    endif
 
-   jaja(:,:)=tr_jaja(:,:)*tr_2*ciso1
-   jbjb(:,:)=tr_jbjb(:,:)*tr_2*ciso1
-   jajb(:,:)=tr_jajb(:,:)*tr_2*ciso3
+   jaja(:,:)=tr_jaja(:,:)*tr_2*ciso1*2.0d0
+   jbjb(:,:)=tr_jbjb(:,:)*tr_2*ciso1*2.0d0
+   jajb(:,:)=tr_jajb(:,:)*tr_2*ciso3*2.0d0
    do i=1,4
       do j=1,4
-      jajc(i,j)=tr_ja(i)*tr_jc(j)*ciso2
-      jajd(i,j)=tr_ja(i)*tr_jd(j)*ciso3
-      jbjc(i,j)=tr_jb(i)*tr_jc(j)*ciso3
-      jbjd(i,j)=tr_jb(i)*tr_jd(j)*ciso2
+      jajc(i,j)=tr_ja(i)*tr_jc(j)*ciso2*2.0d0
+      jajd(i,j)=tr_ja(i)*tr_jd(j)*ciso3*2.0d0
+      jbjc(i,j)=tr_jb(i)*tr_jc(j)*ciso3*2.0d0
+      jbjd(i,j)=tr_jb(i)*tr_jd(j)*ciso2*2.0d0
       enddo
    enddo
   
@@ -551,23 +555,27 @@ subroutine det_JaJc_exc(r_cc,r_cl,r_ll,r_t,r_tp)
       enddo
    enddo
 
-   if(pair_isospin.ne.1 .and. pair_isospin.ne.0) then
-        ciso1 = IDeltaADag_EM(t1p,t2p,t1,t2)*IDeltaA_EM(t1,t2,t2p,t1p)
-        ciso2 = IDeltaBDag_EM(t1p,t2p,t1,t2)*IDeltaB_EM(t1,t2,t2p,t1p)
-        ciso3 = IDeltaADag_EM(t1p,t2p,t1,t2)*IDeltaB_EM(t1,t2,t2p,t1p)
+   if(pair_isospin.eq.1) then
+        ciso1 = (4.0d0/9.0d0)
+        ciso2 = (4.0d0/9.0d0)
+        ciso3 = (4.0d0/9.0d0)
+   else if(pair_isospin.eq.0) then
+        ciso1 = (8.0d0/9.0d0)
+        ciso2 = (-8.0d0/9.0d0)
+        ciso3 = 0
    else
-        ciso1 = 16.0d0/3.0d0
-        ciso2 = -16.0d0/9.0d0
-        ciso3 = 16.0d0/9.0d0
+        ciso1 = 4.0d0/3.0d0
+        ciso2 = -4.0d0/9.0d0
+        ciso3 = 4.0d0/9.0d0
    endif
    
-   jaja(:,:)=tr_jaja(:,:)*ciso1
-   jbjb(:,:)=tr_jbjb(:,:)*ciso2
-   jajb(:,:)=2.0d0*tr_jajb(:,:)*ciso3
-   jajc(:,:)=tr_jajc(:,:)*ciso2
-   jajd(:,:)=tr_jajd(:,:)*ciso3
-   jbjc(:,:)=tr_jbjc(:,:)*ciso3
-   jbjd(:,:)=tr_jbjd(:,:)*ciso1
+   jaja(:,:)=tr_jaja(:,:)*ciso1*2.0d0
+   jbjb(:,:)=tr_jbjb(:,:)*ciso2*2.0d0
+   jajb(:,:)=2.0d0*tr_jajb(:,:)*ciso3*2.0d0
+   jajc(:,:)=tr_jajc(:,:)*ciso2*2.0d0
+   jajd(:,:)=tr_jajd(:,:)*ciso3*2.0d0
+   jbjc(:,:)=tr_jbjc(:,:)*ciso3*2.0d0
+   jbjd(:,:)=tr_jbjd(:,:)*ciso1*2.0d0
 
    r_exc=jaja+jbjb+jajb+jajc+jajd+jbjc+jbjd
    
@@ -657,24 +665,24 @@ end subroutine det_JaJc_exc
       enddo
    enddo
 
-   if(pair_isospin.ne.1 .and. pair_isospin.ne.0) then
-        ciso1 = -Ivz(t1p,t2p,t1,t2)*IDeltaA_EM(t1,t2,t1p,t2p)
-        ciso2 = -Ivz(t1p,t2p,t1,t2)*IDeltaB_EM(t1,t2,t1p,t2p)
-        !Changing convention
-        ciso1 = -ciso1
-        ciso2 = -ciso2
+   if(pair_isospin.eq.1) then
+        ciso1 = 0.0d0
+        ciso2 = 0.0d0
+   else if(pair_isospin.eq.0) then
+        ciso1 = (4.0d0/3.0d0)
+        ciso2 = (-4.0d0/3.0d0)
    else
-        ciso1 = 16.0d0/3.0d0
-        ciso2 = -16.0d0/3.0d0
+        ciso1 = 4.0d0/3.0d0
+        ciso2 = (-4.0d0/3.0d0)
    endif
 
    
-   jfja=jfja*ciso1*2.0d0
-   jfjb=jfjb*ciso2*2.0d0
-   jsja=jsja*ciso1*2.0d0
-   jsjb=jsjb*ciso2*2.0d0
-   jpja=jpja*ciso1*2.0d0
-   jpjb=jpjb*ciso2*2.0d0
+   jfja=jfja*ciso1*2.0d0*2.0d0
+   jfjb=jfjb*ciso2*2.0d0*2.0d0
+   jsja=jsja*ciso1*2.0d0*2.0d0
+   jsjb=jsjb*ciso2*2.0d0*2.0d0
+   jpja=jpja*ciso1*2.0d0*2.0d0
+   jpjb=jpjb*ciso2*2.0d0*2.0d0
 
    r_av=jfja+jfjb+jsja+jsjb+jpja+jpjb
 !   r_av(1,4)=(w/q(4))*r_av(1,1)
@@ -762,20 +770,20 @@ end subroutine det_JaJc_exc
       enddo
    enddo
 
-   if(pair_isospin.ne.1 .and. pair_isospin.ne.0) then
-        ciso = -Ivz(t1p,t2p,t1,t2)*IDeltaA_EM(t1,t2,t2p,t1p)
-        !Changing convention
-        ciso = -ciso
+   if(pair_isospin.eq.1) then
+        ciso = 0.0d0
+   else if(pair_isospin.eq.0) then
+        ciso = (4.0d0/3.0d0)
    else
-        ciso = 16.0d0/3.0d0
+        ciso = 4.0d0/3.0d0
    endif
 
-   jfja(:,:)=jfja(:,:)*ciso*2.0d0
-   jfjb(:,:)=jfjb(:,:)*ciso*2.0d0
-   jsja(:,:)=jsja(:,:)*ciso*2.0d0
-   jsjb(:,:)=jsjb(:,:)*ciso*2.0d0
-   jpja(:,:)=jpja(:,:)*ciso*2.0d0
-   jpjb(:,:)=jpjb(:,:)*ciso*2.0d0
+   jfja(:,:)=jfja(:,:)*ciso*2.0d0*2.0d0
+   jfjb(:,:)=jfjb(:,:)*ciso*2.0d0*2.0d0
+   jsja(:,:)=jsja(:,:)*ciso*2.0d0*2.0d0
+   jsjb(:,:)=jsjb(:,:)*ciso*2.0d0*2.0d0
+   jpja(:,:)=jpja(:,:)*ciso*2.0d0*2.0d0
+   jpjb(:,:)=jpjb(:,:)*ciso*2.0d0*2.0d0
    
    r_av=jfja+jfjb+jsja+jsjb+jpja+jpjb
    
@@ -907,7 +915,6 @@ subroutine det_JpiJpi(r_cc,r_cl,r_ll,r_t,r_tp)
       enddo
    enddo
 
-   jfjf(:,:)=16.0d0*tr_ff(:,:)*tr_2
    do mu=1,4
       do nu=1,4
       jsjs(mu,nu)=2.0d0*tr_ss12(mu)*tr_ss21(nu)
@@ -916,17 +923,21 @@ subroutine det_JpiJpi(r_cc,r_cl,r_ll,r_t,r_tp)
       enddo
    enddo 
 
-   if(pair_isospin.ne.1 .and. pair_isospin.ne.0) then
-        ciso = -Ivz(t1p,t2p,t1,t2)*Ivz(t1,t2,t1p,t2p)
+   if(pair_isospin.eq.1) then
+        ciso = 0.0d0
+   else if(pair_isospin.eq.0) then
+        ciso = (4.0d0)
    else
-        ciso = 16.0d0
+        ciso = (4.0d0)
    endif
 
-   jsjs(:,:)=ciso*(jsjs(:,:)+tr_ss11(:,:)*tr_2+tr_ss22(:,:)*tr_1)
-   jpjp(:,:)=ciso*(jpjp(:,:)+tr_pp11(:,:)*tr_2+tr_pp22(:,:)*tr_1)
-   jpjs(:,:)=ciso*(jpjs(:,:)+tr_ps11(:,:)*tr_2+tr_ps22(:,:)*tr_1)
-   jfjs(:,:)=ciso*(tr_fs1(:,:)*tr_2*2.0d0)
-   jfjp(:,:)=ciso*(tr_fp1(:,:)*tr_2*2.0d0)
+
+   jfjf(:,:)=ciso*tr_ff(:,:)*tr_2*2.0d0
+   jsjs(:,:)=ciso*(jsjs(:,:)+tr_ss11(:,:)*tr_2+tr_ss22(:,:)*tr_1)*2.0d0
+   jpjp(:,:)=ciso*(jpjp(:,:)+tr_pp11(:,:)*tr_2+tr_pp22(:,:)*tr_1)*2.0d0
+   jpjs(:,:)=ciso*(jpjs(:,:)+tr_ps11(:,:)*tr_2+tr_ps22(:,:)*tr_1)*2.0d0
+   jfjs(:,:)=ciso*(tr_fs1(:,:)*tr_2*2.0d0)*2.0d0
+   jfjp(:,:)=ciso*(tr_fp1(:,:)*tr_2*2.0d0)*2.0d0
    r_av=jfjf+jsjs+2.0d0*jfjs+jpjp+2.0d0*jfjp+2.0d0*jpjs
 
 !   r_av(1,4)=(w/q(4))*r_av(1,1)
