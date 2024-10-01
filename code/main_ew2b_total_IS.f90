@@ -14,7 +14,7 @@ program em_2body
    real*8 :: sig,sigA,sig_err,sigA_err
    real*8 :: enu_max,q2max,he,q2max_c
    real*8 :: ti,tf
-   real*8 :: ti1, ti2 !isospins of initial nucleon pair
+   integer*4 :: ti1, ti2 !isospins of initial nucleon pair
    real*8, allocatable :: enu_v(:)
    real*8 :: sig_pi_pi, sig_pi_ni
    real*8 :: sig_pi_pi_err, sig_pi_ni_err
@@ -24,13 +24,13 @@ program em_2body
    call init0()
 
 ! read input
-    open(unit=7, file='C12_2700_15p0_2b_pp+nn.out')
-    open(unit=8, file='C12_2700_15p0_2b_pn+np.out')
+    open(unit=7, file='testC12_2700_15p0_2b_pp+nn.out')
+    open(unit=8, file='testC12_2700_15p0_2b_pn+np.out')
 
    if (myrank().eq.0) then
       read(5,*) nev
       read(5,*) ee,thetalept
-      !read(5,*) enu,cos
+      read(5,*) ti1,ti2
       read(5,*) wmax,nw      
       read(5,*) xpf
       read(5,*) xA
@@ -43,7 +43,8 @@ program em_2body
    call bcast(nev)
    call bcast(ee)
    call bcast(thetalept)
-!   call bcast(cos)   
+   call bcast(ti1)
+   call bcast(ti2)   
    call bcast(wmax)
    call bcast(nw)
    call bcast(xpf)
@@ -81,8 +82,8 @@ program em_2body
    call dirac_matrices_in(xmd,xmn,xmpi)
 
    !Cross section for pp and nn initial pairs
-   ti1=0.5 !+ 1/2 isospin
-   ti2=0.5 !+ 1/2 isospin
+   !ti1=1 !+ 1/2 isospin
+   !ti2=2 !+ 1/2 isospin
    call set_isospins(ti1,ti2)
    call mc_init(i_fg,pwia,i_fsi,irn,nev,nwlk,xpf,thetalept,xmpi,xmd,xmn,xA,np,ne,nk_fname)
 
@@ -101,23 +102,23 @@ program em_2body
    close(7)
 
       !Cross section for pp and nn initial pairs
-   ti1=0.5 !+ 1/2 isospin
-   ti2=-0.5 !- 1/2 isospin
-   call set_isospins(ti1,ti2)
+   !ti1=1 !+ 1/2 isospin
+   !ti2=2 !- 1/2 isospin
+   !call set_isospins(ti1,ti2)
    
-   do i=1,nw
-      w=+dble(i-0.5d0)*hw
-      ef=ee-w
-      call mc_eval(ee,w,sig_pi_ni,sig_pi_ni_err)
+   !do i=1,nw
+   !   w=+dble(i-0.5d0)*hw
+   !   ef=ee-w
+   !   call mc_eval(ee,w,sig_pi_ni,sig_pi_ni_err)
 
-      if (myrank().eq.0) then
-         write(6,*)'Computing for pn and np initial states'
-         write(6,*)w,ee-w, sig_pi_ni, sig_pi_ni_err
-         write(8,*)w,ee-w, sig_pi_ni, sig_pi_ni_err
-         flush(8)
-      endif
-   enddo
-   close(8)
+   !   if (myrank().eq.0) then
+   !      write(6,*)'Computing for pn and np initial states'
+   !      write(6,*)w,ee-w, sig_pi_ni*2.0d0, sig_pi_ni_err
+   !      write(8,*)w,ee-w, sig_pi_ni*2.0d0, sig_pi_ni_err
+   !      flush(8)
+   !   endif
+   !enddo
+   !close(8)
 
    close(9)
    tf=MPI_Wtime()

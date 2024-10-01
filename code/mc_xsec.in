@@ -1,5 +1,6 @@
 30000            # number of events
 1500.0    30.0   # enu, thetalept
+1, 2 			#isospin1, isospin2
 1200.0  40        # wmax,nw
 225.0             # xpf
 12                # xA

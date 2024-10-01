@@ -8,13 +8,13 @@ module mc_module
    real*8, private,parameter :: alpha=1.0d0/137.0d0
    real*8, private, allocatable :: pv(:),dp(:),ep(:),Pke(:,:)
    real*8, private, allocatable :: kin(:),pot(:),pdel(:),pot_del(:)
-   real*8, private, save :: ti1, ti2
+   integer*4, private, save :: ti1, ti2
    integer*8, private, allocatable, save :: irn(:)
 contains
 
 subroutine set_isospins(t1,t2)
    implicit none
-   real*8 :: t1,t2
+   integer*4 :: t1,t2
 
    ti1=t1 
    ti2=t2
